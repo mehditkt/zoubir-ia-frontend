@@ -13,8 +13,9 @@
       align-items: center;
       font-family: Arial, sans-serif;
     }
+
     .chat-container {
-      width: 500px;
+      width: 400px;
       height: 600px;
       background: rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(10px);
@@ -24,19 +25,23 @@
       flex-direction: column;
       overflow: hidden;
     }
+
     #chat {
       flex: 1;
       padding: 15px;
       overflow-y: auto;
       color: white;
     }
+
     .user { color: #00ffff; margin: 5px 0; }
     .bot { color: #ffcc00; margin: 5px 0; }
+
     .input-area {
       display: flex;
       border-top: 1px solid rgba(255,255,255,0.3);
       background: rgba(0,0,0,0.3);
     }
+
     #msg {
       flex: 1;
       border: none;
@@ -46,7 +51,11 @@
       background: transparent;
       color: white;
     }
-    #msg::placeholder { color: rgba(255,255,255,0.5); }
+
+    #msg::placeholder {
+      color: rgba(255,255,255,0.5);
+    }
+
     button {
       background: #00ffff;
       border: none;
@@ -56,62 +65,62 @@
       border-radius: 0 0 20px 0;
       transition: background 0.3s;
     }
-    button:hover { background: #00cccc; }
+
+    button:hover {
+      background: #00cccc;
+    }
+
     .footer-right {
-      position: fixed;
-      bottom: 10px;
-      right: 10px;
-      color: #001f3f;
       font-size: 12px;
+      color: #001f3f;
+      text-align: right;
+      padding: 5px;
     }
   </style>
 </head>
 <body>
   <div class="chat-container">
     <div id="chat"></div>
+
     <div class="input-area">
       <input id="msg" type="text" placeholder="Écris ton message à Zoubir IA..." onkeypress="checkEnter(event)">
       <button onclick="sendMsg()">Envoyer</button>
     </div>
+    <div class="footer-right">all right reserved - Aoua Mehdi</div>
   </div>
 
-  <div class="footer-right">all right reserved - Aoua Mehdi</div>
-
   <script>
-    // URL publique de ton backend après déploiement
-    const API_URL = "https://backend-zoubir.onrender.com/";
-
     async function sendMsg() {
       let msg = document.getElementById("msg").value;
       let chat = document.getElementById("chat");
-      if (!msg.trim()) return;
+
+      if (msg.trim() === "") return;
 
       chat.innerHTML += `<div class="user"><b>Toi:</b> ${msg}</div>`;
       document.getElementById("msg").value = "";
       chat.scrollTop = chat.scrollHeight;
 
       try {
-        let res = await fetch(API_URL, {
+        let res = await fetch("https://mehditkt-zoubi-ia.hf.space/chat", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({inputs: msg})
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({message: msg})
         });
 
         let data = await res.json();
-        let reply = data[0]?.generated_text || "Zoubir ne répond pas...";
-        chat.innerHTML += `<div class="bot"><b>Zoubir IA:</b> ${reply}</div>`;
-      } catch (err) {
-        chat.innerHTML += `<div class="bot"><b>Zoubir IA:</b> Erreur de connexion</div>`;
+        chat.innerHTML += `<div class="bot"><b>Zoubir IA:</b> ${data.reply}</div>`;
+      } catch (e) {
+        chat.innerHTML += `<div class="bot"><b>Zoubir IA:</b> Erreur de connexion au serveur 😢</div>`;
       }
 
       chat.scrollTop = chat.scrollHeight;
     }
 
-    function checkEnter(e) { if (e.key === "Enter") sendMsg(); }
+    function checkEnter(e) {
+      if (e.key === "Enter") {
+        sendMsg();
+      }
+    }
   </script>
 </body>
 </html>
-
-
-
-
