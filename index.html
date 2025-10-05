@@ -2,117 +2,127 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Zoubir IA</title>
+  <title>Zoubir IA Chatbot</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #121212;
-      color: #f1f1f1;
+      margin: 0;
+      height: 100vh;
+      background: radial-gradient(circle at center, #001f3f, #00ffff);
       display: flex;
       justify-content: center;
       align-items: center;
-      flex-direction: column;
-      height: 100vh;
-      margin: 0;
+      font-family: Arial, sans-serif;
     }
-    #chatbox {
-      width: 90%;
-      max-width: 500px;
-      height: 60vh;
-      border: 1px solid #444;
-      border-radius: 10px;
-      padding: 10px;
-      overflow-y: auto;
-      background: #1e1e1e;
-      margin-bottom: 10px;
-    }
-    .msg {
-      margin: 5px 0;
-      padding: 8px;
-      border-radius: 5px;
-      max-width: 80%;
-    }
-    .user {
-      background: #4caf50;
-      align-self: flex-end;
-    }
-    .bot {
-      background: #333;
-      align-self: flex-start;
-    }
-    #input-area {
+
+    .chat-container {
+      width: 450px;
+      height: 600px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      box-shadow: 0 0 25px rgba(0,0,0,0.4);
       display: flex;
-      width: 90%;
-      max-width: 500px;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
     }
-    input {
+
+    #chat {
       flex: 1;
-      padding: 10px;
-      border: none;
-      border-radius: 5px 0 0 5px;
-      outline: none;
-    }
-    button {
-      padding: 10px;
-      border: none;
-      background: #4caf50;
+      padding: 15px;
+      overflow-y: auto;
       color: white;
-      border-radius: 0 5px 5px 0;
+    }
+
+    .user { color: #00ffff; margin: 5px 0; }
+    .bot { color: #ffcc00; margin: 5px 0; }
+
+    .input-area {
+      display: flex;
+      border-top: 1px solid rgba(255,255,255,0.3);
+      background: rgba(0,0,0,0.3);
+    }
+
+    #msg {
+      flex: 1;
+      border: none;
+      padding: 10px;
+      font-size: 14px;
+      outline: none;
+      background: transparent;
+      color: white;
+    }
+
+    #msg::placeholder {
+      color: rgba(255,255,255,0.5);
+    }
+
+    button {
+      background: #00ffff;
+      border: none;
+      padding: 10px 20px;
       cursor: pointer;
+      font-weight: bold;
+      border-radius: 0 0 20px 0;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #00cccc;
+    }
+
+    /* Footer */
+    .footer {
+      position: absolute;
+      bottom: 5px;
+      right: 10px;
+      font-size: 12px;
+      color: #001f3f;
     }
   </style>
 </head>
 <body>
-  <h1>💬 Zoubir IA</h1>
-  <div id="chatbox"></div>
-  <div id="input-area">
-    <input type="text" id="userInput" placeholder="Écris ton message...">
-    <button onclick="sendMessage()">Envoyer</button>
+  <div class="chat-container">
+    <div id="chat"></div>
+    <div class="input-area">
+      <input id="msg" type="text" placeholder="Écris ton message à Zoubir IA..." onkeypress="checkEnter(event)">
+      <button onclick="sendMsg()">Envoyer</button>
+    </div>
+    <div class="footer">all right reserved - Aoua Mehdi</div>
   </div>
 
   <script>
-    const chatbox = document.getElementById("chatbox");
+    async function sendMsg() {
+      let msg = document.getElementById("msg").value;
+      let chat = document.getElementById("chat");
 
-    function addMessage(content, sender) {
-      const msg = document.createElement("div");
-      msg.classList.add("msg", sender);
-      msg.textContent = content;
-      chatbox.appendChild(msg);
-      chatbox.scrollTop = chatbox.scrollHeight;
-    }
+      if (msg.trim() === "") return;
 
-    async function sendMessage() {
-      const input = document.getElementById("userInput");
-      const message = input.value.trim();
-      if (!message) return;
-
-      addMessage("👤 " + message, "user");
-      input.value = "";
+      chat.innerHTML += `<div class="user"><b>Toi:</b> ${msg}</div>`;
+      document.getElementById("msg").value = "";
+      chat.scrollTop = chat.scrollHeight;
 
       try {
-        const response = await fetch("https://huggingface.co/spaces/mehditkt/zoubi_IA", {
+        // Envoie au backend Hugging Face
+        let res = await fetch("https://mehditkt-zoubi-ia.hf.space/run/predict", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ message })
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({"data": [msg]})
         });
 
-        const data = await response.json();
-        addMessage("🤖 " + data.reply, "bot");
+        let data = await res.json();
+        let reply = data.data[0]; // réponse du modèle
+
+        chat.innerHTML += `<div class="bot"><b>Zoubir IA:</b> ${reply}</div>`;
+        chat.scrollTop = chat.scrollHeight;
       } catch (err) {
-        addMessage("❌ Erreur de connexion au backend.", "bot");
+        chat.innerHTML += `<div class="bot"><b>Zoubir IA:</b> Erreur de connexion ❌</div>`;
       }
     }
 
-    // Permet d’envoyer avec la touche Enter
-    document.getElementById("userInput").addEventListener("keypress", function(e) {
-      if (e.key === "Enter") {
-        sendMessage();
-      }
-    });
+    function checkEnter(e) {
+      if (e.key === "Enter") sendMsg();
+    }
   </script>
 </body>
 </html>
-
