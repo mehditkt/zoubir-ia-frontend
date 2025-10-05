@@ -71,7 +71,6 @@
       background: #00cccc;
     }
 
-    /* Footer */
     .footer {
       position: absolute;
       bottom: 5px;
@@ -103,7 +102,6 @@
       chat.scrollTop = chat.scrollHeight;
 
       try {
-        // Envoie au backend Hugging Face
         let res = await fetch("https://mehditkt-zoubi-ia.hf.space/run/predict", {
           method: "POST",
           headers: {"Content-Type": "application/json"},
@@ -111,12 +109,12 @@
         });
 
         let data = await res.json();
-        let reply = data.data[0]; // réponse du modèle
+        let reply = data.data[0];
 
         chat.innerHTML += `<div class="bot"><b>Zoubir IA:</b> ${reply}</div>`;
         chat.scrollTop = chat.scrollHeight;
       } catch (err) {
-        chat.innerHTML += `<div class="bot"><b>Zoubir IA:</b> Erreur de connexion ❌</div>`;
+        chat.innerHTML += `<div class="bot"><b>Zoubir IA:</b> ❌ Erreur de connexion au backend.</div>`;
       }
     }
 
@@ -126,3 +124,5 @@
   </script>
 </body>
 </html>
+
+
